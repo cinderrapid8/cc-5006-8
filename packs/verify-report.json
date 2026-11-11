@@ -1,0 +1,84 @@
+{
+  "at": "2026-11-11T18:20:12.395Z",
+  "allOk": true,
+  "results": [
+    {
+      "packId": "aurora",
+      "probe": {
+        "width": 1280,
+        "height": 720,
+        "duration": 10,
+        "pixFmt": "yuv420p",
+        "codec": "h264"
+      },
+      "expected": {
+        "width": 1280,
+        "height": 720,
+        "duration": 10
+      },
+      "durationDelta": 0,
+      "sizeOk": true,
+      "durationOk": true,
+      "frames": {
+        "expected": 300,
+        "actual": 300,
+        "match": true
+      },
+      "frozenSha256": "70bb40ac25ba461cc81038238b71700e110a3683067330b6b6df59fd52cddf59",
+      "actualSha256": "70bb40ac25ba461cc81038238b71700e110a3683067330b6b6df59fd52cddf59",
+      "ok": true
+    },
+    {
+      "packId": "boreal",
+      "probe": {
+        "width": 1280,
+        "height": 720,
+        "duration": 10,
+        "pixFmt": "yuv420p",
+        "codec": "h264"
+      },
+      "expected": {
+        "width": 1280,
+        "height": 720,
+        "duration": 10
+      },
+      "durationDelta": 0,
+      "sizeOk": true,
+      "durationOk": true,
+      "frames": {
+        "expected": 300,
+        "actual": 300,
+        "match": true
+      },
+      "frozenSha256": "4fe3f66183dc22713e2ce796f44ebaabe6ea4d41c1de3d670a05f5fec76da8d4",
+      "actualSha256": "4fe3f66183dc22713e2ce796f44ebaabe6ea4d41c1de3d670a05f5fec76da8d4",
+      "ok": true
+    },
+    {
+      "packId": "cobalt",
+      "probe": {
+        "width": 1280,
+        "height": 720,
+        "duration": 10,
+        "pixFmt": "yuv420p",
+        "codec": "h264"
+      },
+      "expected": {
+        "width": 1280,
+        "height": 720,
+        "duration": 10
+      },
+      "durationDelta": 0,
+      "sizeOk": true,
+      "durationOk": true,
+      "frames": {
+        "expected": 300,
+        "actual": 300,
+        "match": true
+      },
+      "frozenSha256": "a8460eca0f1aa0ccf418229c410fd9d24fdae43175feacad304d13b93dfaef43",
+      "actualSha256": "a8460eca0f1aa0ccf418229c410fd9d24fdae43175feacad304d13b93dfaef43",
+      "ok": true
+    }
+  ]
+}

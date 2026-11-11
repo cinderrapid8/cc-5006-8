@@ -1,0 +1,127 @@
+{
+  "packId": "boreal",
+  "label": "Boreal — transparent logo suite",
+  "canonical": {
+    "templateId": "boreal_ad",
+    "variables": {
+      "title": "BOREAL NORTH",
+      "tagline": "Where silence becomes scenery"
+    },
+    "bindings": {
+      "background": "bg12.mp4",
+      "logo": "logo.png",
+      "endcard": "endcard.png"
+    }
+  },
+  "cases": [
+    {
+      "id": "opaque_logo_rejected",
+      "desc": "a logo without an alpha channel fails the slot transparency requirement",
+      "flattenAlpha": "logo",
+      "expectErrors": [
+        "ASSET_ALPHA"
+      ]
+    },
+    {
+      "id": "ref_missing_node",
+      "desc": "node pointing at a node that does not exist",
+      "patch": {
+        "node": "out",
+        "inputs": [
+          "doesNotExist"
+        ]
+      },
+      "expectErrors": [
+        "REF_MISSING"
+      ]
+    },
+    {
+      "id": "ref_cycle",
+      "desc": "circular node reference must be reported with the cycle path",
+      "patch": {
+        "node": "logoLayer",
+        "inputs": [
+          "titleLayer"
+        ]
+      },
+      "expectErrors": [
+        "REF_CYCLE"
+      ]
+    }
+  ],
+  "frozen": {
+    "output": "renders/frozen.mp4",
+    "probe": {
+      "width": 1280,
+      "height": 720,
+      "duration": 10,
+      "codec": "h264",
+      "pixFmt": "yuv420p"
+    },
+    "frameHashSha256": "4fe3f66183dc22713e2ce796f44ebaabe6ea4d41c1de3d670a05f5fec76da8d4",
+    "frameHashCount": 300
+  },
+  "caseResults": [
+    {
+      "caseId": "opaque_logo_rejected",
+      "desc": "a logo without an alpha channel fails the slot transparency requirement",
+      "rejected": true,
+      "expected": [
+        "ASSET_ALPHA"
+      ],
+      "actualCodes": [
+        "ASSET_ALPHA"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "ASSET_ALPHA",
+          "message": "slot \"logo\" requires transparency but asset \"boreal_flattened\" pixel format \"rgb24\" has no alpha channel",
+          "slotId": "logo"
+        }
+      ]
+    },
+    {
+      "caseId": "ref_missing_node",
+      "desc": "node pointing at a node that does not exist",
+      "rejected": true,
+      "expected": [
+        "REF_MISSING"
+      ],
+      "actualCodes": [
+        "REF_MISSING"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "REF_MISSING",
+          "message": "node \"out\" references non-existent node \"doesNotExist\"",
+          "nodeId": "out"
+        }
+      ]
+    },
+    {
+      "caseId": "ref_cycle",
+      "desc": "circular node reference must be reported with the cycle path",
+      "rejected": true,
+      "expected": [
+        "REF_CYCLE"
+      ],
+      "actualCodes": [
+        "REF_CYCLE"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "REF_CYCLE",
+          "message": "circular reference detected: logoLayer -> titleLayer -> logoLayer",
+          "nodeId": "logoLayer",
+          "path": "logoLayer -> titleLayer -> logoLayer"
+        }
+      ]
+    }
+  ]
+}

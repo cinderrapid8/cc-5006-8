@@ -1,0 +1,149 @@
+{
+  "packId": "cobalt",
+  "label": "Cobalt — short background and layer bounds suite",
+  "canonical": {
+    "templateId": "cobalt_ad",
+    "variables": {
+      "title": "COBALT FORGE",
+      "tagline": "Precision built for real work"
+    },
+    "bindings": {
+      "background": "bg12.mp4",
+      "logo": "logo.png",
+      "endcard": "endcard.png"
+    }
+  },
+  "cases": [
+    {
+      "id": "short_background",
+      "desc": "6s background cannot cover the 10s program even though it loops",
+      "assetsOverride": {
+        "background": "bg6.mp4"
+      },
+      "expectErrors": [
+        "ASSET_DURATION_SHORT"
+      ]
+    },
+    {
+      "id": "layer_out_of_bounds",
+      "desc": "text box crossing the canvas edge",
+      "invalidTemplate": "cobalt_bounds",
+      "expectErrors": [
+        "LAYER_OUT_OF_BOUNDS"
+      ]
+    },
+    {
+      "id": "transition_overflow",
+      "desc": "fade in plus fade out longer than the layer window",
+      "invalidTemplate": "cobalt_transition",
+      "expectErrors": [
+        "TRANSITION_OVERLAP"
+      ]
+    },
+    {
+      "id": "forbidden_node_type",
+      "desc": "arbitrary command node type is not in the registry",
+      "patch": {
+        "node": "bg",
+        "type": "shell_exec"
+      },
+      "expectErrors": [
+        "NODE_TYPE_UNKNOWN"
+      ]
+    }
+  ],
+  "frozen": {
+    "output": "renders/frozen.mp4",
+    "probe": {
+      "width": 1280,
+      "height": 720,
+      "duration": 10,
+      "codec": "h264",
+      "pixFmt": "yuv420p"
+    },
+    "frameHashSha256": "a8460eca0f1aa0ccf418229c410fd9d24fdae43175feacad304d13b93dfaef43",
+    "frameHashCount": 300
+  },
+  "caseResults": [
+    {
+      "caseId": "short_background",
+      "desc": "6s background cannot cover the 10s program even though it loops",
+      "rejected": true,
+      "expected": [
+        "ASSET_DURATION_SHORT"
+      ],
+      "actualCodes": [
+        "ASSET_DURATION_SHORT"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "ASSET_DURATION_SHORT",
+          "message": "slot \"background\" needs >= 10s, asset \"cobalt_bg6\" is only 6.000s",
+          "slotId": "background"
+        }
+      ]
+    },
+    {
+      "caseId": "layer_out_of_bounds",
+      "desc": "text box crossing the canvas edge",
+      "rejected": true,
+      "expected": [
+        "LAYER_OUT_OF_BOUNDS"
+      ],
+      "actualCodes": [
+        "LAYER_OUT_OF_BOUNDS"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "LAYER_OUT_OF_BOUNDS",
+          "message": "text \"titleLayer\" box (900,250 1120x170) exceeds canvas 1280x720",
+          "nodeId": "titleLayer"
+        }
+      ]
+    },
+    {
+      "caseId": "transition_overflow",
+      "desc": "fade in plus fade out longer than the layer window",
+      "rejected": true,
+      "expected": [
+        "TRANSITION_OVERLAP"
+      ],
+      "actualCodes": [
+        "TRANSITION_OVERLAP"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "TRANSITION_OVERLAP",
+          "message": "node \"logoLayer\" transitions 1.6s do not fit in 1s window",
+          "nodeId": "logoLayer"
+        }
+      ]
+    },
+    {
+      "caseId": "forbidden_node_type",
+      "desc": "arbitrary command node type is not in the registry",
+      "rejected": true,
+      "expected": [
+        "NODE_TYPE_UNKNOWN"
+      ],
+      "actualCodes": [
+        "NODE_TYPE_UNKNOWN"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "NODE_TYPE_UNKNOWN",
+          "message": "node \"bg\" has disallowed type \"shell_exec\"",
+          "nodeId": "bg"
+        }
+      ]
+    }
+  ]
+}

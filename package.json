@@ -1,0 +1,22 @@
+{
+  "name": "ad-template-composer",
+  "version": "1.0.0",
+  "description": "Short-ad template composition system: validated media graphs, no shell interpolation",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "fixtures": "node scripts/make-fixtures.js",
+    "bootstrap": "node scripts/bootstrap.js",
+    "freeze": "node scripts/freeze.js",
+    "verify": "node scripts/verify.js",
+    "ui:smoke": "node scripts/ui-smoke.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.0",
+    "express": "^4.0.0",
+    "ffmpeg-static": "^5.0.0",
+    "ffprobe-static": "^3.0.0"
+  }
+}

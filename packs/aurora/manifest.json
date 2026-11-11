@@ -1,0 +1,98 @@
+{
+  "packId": "aurora",
+  "label": "Aurora — long headline suite",
+  "canonical": {
+    "templateId": "aurora_ad",
+    "variables": {
+      "title": "AURORA LIGHT",
+      "tagline": "Feel the glow of a new day"
+    },
+    "bindings": {
+      "background": "bg12.mp4",
+      "logo": "logo.png",
+      "endcard": "endcard.png"
+    }
+  },
+  "cases": [
+    {
+      "id": "long_title_overflow",
+      "desc": "headline far wider and taller than its container",
+      "variables": {
+        "title": "AURORA LIGHT PRESENTS THE BIGGEST MIDNIGHT SUN CELEBRATION EVENT OF THE ENTIRE DECADE WITH LIVE PERFORMANCES",
+        "tagline": "Feel the glow of a new day"
+      },
+      "expectErrors": [
+        "TEXT_OVERFLOW"
+      ]
+    },
+    {
+      "id": "missing_asset",
+      "desc": "logo slot unbound must block formal render, no placeholder allowed",
+      "unbind": [
+        "logo"
+      ],
+      "expectErrors": [
+        "ASSET_MISSING"
+      ]
+    }
+  ],
+  "frozen": {
+    "output": "renders/frozen.mp4",
+    "probe": {
+      "width": 1280,
+      "height": 720,
+      "duration": 10,
+      "codec": "h264",
+      "pixFmt": "yuv420p"
+    },
+    "frameHashSha256": "70bb40ac25ba461cc81038238b71700e110a3683067330b6b6df59fd52cddf59",
+    "frameHashCount": 300
+  },
+  "caseResults": [
+    {
+      "caseId": "long_title_overflow",
+      "desc": "headline far wider and taller than its container",
+      "rejected": true,
+      "expected": [
+        "TEXT_OVERFLOW"
+      ],
+      "actualCodes": [
+        "TEXT_OVERFLOW"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "TEXT_OVERFLOW",
+          "message": "text node \"titleLayer\" overflows its container: height 414.0px > container 170px (5 lines)",
+          "nodeId": "titleLayer",
+          "measuredWidth": 1108.02,
+          "measuredHeight": 414,
+          "boxWidth": 1120,
+          "boxHeight": 170,
+          "lines": 5
+        }
+      ]
+    },
+    {
+      "caseId": "missing_asset",
+      "desc": "logo slot unbound must block formal render, no placeholder allowed",
+      "rejected": true,
+      "expected": [
+        "ASSET_MISSING"
+      ],
+      "actualCodes": [
+        "ASSET_MISSING"
+      ],
+      "locatable": true,
+      "matched": true,
+      "errors": [
+        {
+          "code": "ASSET_MISSING",
+          "message": "required slot \"logo\" has no asset bound (no placeholder substitution)",
+          "slotId": "logo"
+        }
+      ]
+    }
+  ]
+}

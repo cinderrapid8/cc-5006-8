@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>短广告模板合成台</title>
+<style>
+  :root { --bg:#0f1424; --panel:#171e33; --line:#27324f; --text:#e8edf7; --muted:#93a0bd;
+          --ok:#37c98e; --err:#ff6b6b; --warn:#ffc857; --accent:#5b8cff; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:14px 22px; border-bottom:1px solid var(--line); display:flex; gap:16px; align-items:center; }
+  header h1 { font-size:16px; margin:0; }
+  header select, header button { font-size:13px; }
+  .layout { display:grid; grid-template-columns: 340px 1fr 360px; gap:14px; padding:14px; height:calc(100vh - 56px); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; overflow:auto; }
+  .panel h2 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:18px 0 8px; }
+  .panel h2:first-child { margin-top:0; }
+  label { display:block; font-size:12px; color:var(--muted); margin:8px 0 3px; }
+  input, select, textarea, button {
+    font:inherit; background:#0e1426; color:var(--text); border:1px solid var(--line);
+    border-radius:7px; padding:7px 9px; width:100%;
+  }
+  textarea { resize:vertical; min-height:54px; }
+  button { cursor:pointer; width:auto; background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  button.secondary { background:transparent; color:var(--text); border-color:var(--line); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .slot { border:1px solid var(--line); border-radius:8px; padding:9px; margin-bottom:8px; }
+  .slot .meta { font-size:11px; color:var(--muted); margin-top:3px; }
+  .preview-wrap { display:flex; flex-direction:column; gap:10px; }
+  .preview-box { background:#000; border:1px solid var(--line); border-radius:10px; display:flex; align-items:center; justify-content:center; min-height:300px; }
+  .preview-box img { max-width:100%; max-height:60vh; }
+  .issues { list-style:none; padding:0; margin:6px 0; }
+  .issues li { border-radius:7px; padding:8px 10px; margin-bottom:6px; font-size:12.5px; border:1px solid; }
+  .issues .err { border-color:var(--err); background:rgba(255,107,107,.1); }
+  .issues .warn { border-color:var(--warn); background:rgba(255,200,87,.08); }
+  .issues .loc { color:var(--muted); font-family:ui-monospace,monospace; }
+  .badge { display:inline-block; font-size:11px; padding:1px 7px; border-radius:99px; border:1px solid var(--line); color:var(--muted); }
+  .badge.ok { color:var(--ok); border-color:var(--ok); }
+  .badge.bad { color:var(--err); border-color:var(--err); }
+  .job { border:1px solid var(--line); border-radius:8px; padding:9px; margin-bottom:8px; font-size:12.5px; }
+  .job a { color:var(--accent); }
+  .muted { color:var(--muted); }
+  .toast { position:fixed; bottom:18px; right:18px; background:var(--panel); border:1px solid var(--line);
+           border-radius:8px; padding:10px 14px; opacity:0; transition:opacity .2s; max-width:360px; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>短广告模板合成台</h1>
+  <select id="templateSelect" style="width:260px"></select>
+  <button class="secondary" id="reloadBtn">刷新</button>
+  <span class="muted" id="canvasMeta"></span>
+</header>
+
+<div class="layout">
+  <div class="panel" id="leftPanel">
+    <h2>素材绑定</h2>
+    <div id="slots"></div>
+    <h2>上传素材</h2>
+    <div class="row">
+      <input type="file" id="uploadInput">
+      <button class="secondary" id="uploadBtn">上传</button>
+    </div>
+    <p class="muted" id="uploadHint"></p>
+
+    <h2>变量表</h2>
+    <div id="variables"></div>
+    <button id="saveTableBtn" class="secondary">保存变量表</button>
+  </div>
+
+  <div class="panel preview-wrap">
+    <div class="row">
+      <label style="margin:0">预览时间(秒)</label>
+      <input type="number" id="previewTime" value="2" min="0" step="0.5" style="width:110px">
+      <button class="secondary" id="previewBtn">生成预览帧</button>
+      <button id="renderBtn">提交正式渲染</button>
+      <span id="validateBadge" class="badge">未校验</span>
+    </div>
+    <div class="preview-box"><img id="previewImg" alt="预览"></div>
+    <h2>校验结果（节点 / 素材槽 / 变量均可定位）</h2>
+    <ul class="issues" id="issues"><li class="muted">点击“生成预览帧”或“提交正式渲染”触发完整校验。</li></ul>
+  </div>
+
+  <div class="panel">
+    <h2>已存模板</h2>
+    <div id="templateList" class="muted"></div>
+    <h2>渲染任务</h2>
+    <div id="jobs"></div>
+    <button class="secondary" id="refreshJobsBtn">刷新任务</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = { template: null, assets: [], bindings: {}, variables: {}, fonts: [] };
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+async function api(path, opts = {}) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(body.error || res.statusText), { body, status: res.status });
+  return body;
+}
+
+async function loadAssets() {
+  state.assets = await api('/api/assets');
+}
+
+async function loadTemplates(selectId) {
+  const templates = await api('/api/templates');
+  const sel = $('templateSelect');
+  sel.innerHTML = templates.map((t) => `<option value="${t.id}">${t.name} (${t.id})</option>`).join('');
+  $('templateList').innerHTML = templates.map((t) =>
+    `<div class="job">${t.name} <span class="muted">${t.width}x${t.height} · ${t.duration}s · ${t.nodes.length} 节点</span></div>`).join('') || '无';
+  if (selectId && templates.some((t) => t.id === selectId)) sel.value = selectId;
+  if (sel.value) await selectTemplate(sel.value);
+}
+
+async function selectTemplate(id) {
+  state.template = await api(`/api/templates/${id}`);
+  const t = state.template;
+  state.bindings = {};
+  state.variables = Object.fromEntries(t.variables.map((v) => [v.id, '']));
+  $('canvasMeta').textContent = `${t.width}x${t.height} @ ${t.fps}fps · ${t.duration}s · 字体 ${t.font.family} ${t.font.weight || 'normal'}`;
+  renderSlots(); renderVariables();
+}
+
+function renderSlots() {
+  const t = state.template;
+  $('slots').innerHTML = t.slots.map((slot) => {
+    const alphaNote = slot.requiresAlpha ? '· 需要透明通道' : '';
+    const durNote = slot.kind === 'video' ? `· 最短 ${slot.minDuration}s` : '';
+    const options = state.assets.map((a) => `<option value="${a.id}">${a.originalName} (${a.probe ? a.probe.width + 'x' + a.probe.height : '?'})</option>`).join('');
+    return `<div class="slot">
+      <div class="row"><strong>${slot.id}</strong> <span class="badge">${slot.kind}${slot.required ? '' : '（可选）'}</span></div>
+      <div class="meta">需求：${slot.width}x${slot.height} ${durNote} ${alphaNote} · 匹配 ${slot.match}</div>
+      <select data-slot="${slot.id}">
+        <option value="">— 未绑定 —</option>${options}
+      </select>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('[data-slot]').forEach((el) => {
+    el.addEventListener('change', () => { state.bindings[el.dataset.slot] = el.value || undefined; });
+  });
+}
+
+function renderVariables() {
+  const t = state.template;
+  $('variables').innerHTML = t.variables.map((v) => `
+    <label>${v.label} <span class="muted">${v.id}${v.maxLength ? ' · 上限 ' + v.maxLength : ''}</span></label>
+    <textarea data-var="${v.id}" placeholder="输入文本">${state.variables[v.id] || ''}</textarea>`).join('');
+  document.querySelectorAll('[data-var]').forEach((el) => {
+    el.addEventListener('input', () => { state.variables[el.dataset.var] = el.value; });
+  });
+}
+
+function renderIssues(validation) {
+  const ul = $('issues');
+  if (!validation.errors.length && !validation.warnings.length) {
+    ul.innerHTML = '<li class="issues err" style="border-color:var(--ok);background:rgba(55,201,142,.1)">全部校验通过：节点、引用、时间线、素材槽、文本测量均无问题。</li>';
+    $('validateBadge').className = 'badge ok'; $('validateBadge').textContent = '校验通过';
+    return;
+  }
+  ul.innerHTML = validation.errors.map((e) => {
+    const loc = e.nodeId ? `节点 ${e.nodeId}` : e.slotId ? `素材槽 ${e.slotId}` : e.variableId ? `变量 ${e.variableId}` : (e.path || '');
+    const detail = e.measuredWidth != null
+      ? `<div class="loc">实测 ${e.measuredWidth}x${e.measuredHeight}px / 容器 ${e.boxWidth}x${e.boxHeight}px · ${e.lines} 行</div>` : '';
+    return `<li class="err"><strong>${e.code}</strong> — ${e.message}<div class="loc">${loc}</div>${detail}</li>`;
+  }).join('') + validation.warnings.map((e) => `<li class="warn"><strong>${e.code}</strong> — ${e.message}</li>`).join('');
+  $('validateBadge').className = 'badge bad'; $('validateBadge').textContent = `${validation.errors.length} 个错误`;
+}
+
+async function runValidate() {
+  const body = await api('/api/validate', {
+    method: 'POST',
+    body: JSON.stringify({ templateId: state.template.id, variables: state.variables, bindings: state.bindings }),
+  });
+  renderIssues(body);
+  return body;
+}
+
+$('previewBtn').addEventListener('click', async () => {
+  try {
+    const v = await runValidate();
+    if (!v.ok) { toast('校验未通过，无法生成预览'); return; }
+    const res = await fetch('/api/preview', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ templateId: state.template.id, variables: state.variables, bindings: state.bindings, time: Number($('previewTime').value) || 0 }),
+    });
+    if (!res.ok) {
+      const b = await res.json();
+      renderIssues(b.validation || { errors: b.errors || [], warnings: [] });
+      toast('校验未通过，无法生成预览');
+      return;
+    }
+    const blob = await res.blob();
+    $('previewImg').src = URL.createObjectURL(blob);
+  } catch (err) { toast(err.message); }
+});
+
+$('renderBtn').addEventListener('click', async () => {
+  try {
+    const job = await api('/api/jobs', {
+      method: 'POST',
+      body: JSON.stringify({ templateId: state.template.id, variables: state.variables, bindings: state.bindings }),
+    });
+    toast(`任务已入队：${job.job.id}`);
+    setTimeout(loadJobs, 1500);
+  } catch (err) {
+    if (err.body && err.body.errors) renderIssues({ errors: err.body.errors, warnings: [] });
+    toast('缺少必需素材或校验失败，正式渲染已阻止');
+  }
+});
+
+$('saveTableBtn').addEventListener('click', async () => {
+  const id = `${state.template.id}_vars_${Date.now().toString(36)}`;
+  await api('/api/variable-tables', { method: 'POST', body: JSON.stringify({ id, templateId: state.template.id, values: state.variables }) });
+  toast('变量表已保存');
+});
+
+$('uploadBtn').addEventListener('click', async () => {
+  const file = $('uploadInput').files[0];
+  if (!file) return toast('先选择文件');
+  const res = await fetch(`/api/assets?name=${encodeURIComponent(file.name)}`, { method: 'POST', body: file });
+  const body = await res.json();
+  if (!res.ok) return toast(body.error || '上传失败');
+  $('uploadHint').textContent = `已入库 ${body.asset.id}：${body.asset.probe.width}x${body.asset.probe.height}${body.asset.probe.hasAlpha ? ' · 含透明通道' : ''}`;
+  await loadAssets(); renderSlots();
+});
+
+$('reloadBtn').addEventListener('click', () => loadTemplates());
+$('refreshJobsBtn').addEventListener('click', loadJobs);
+$('templateSelect').addEventListener('change', (e) => selectTemplate(e.target.value));
+
+async function loadJobs() {
+  const jobs = await api('/api/jobs');
+  $('jobs').innerHTML = jobs.map((j) => {
+    const probe = j.output && j.output.probe;
+    const link = j.status === 'completed' ? `<a href="/api/jobs/${j.id}/output" target="_blank">下载成片</a>` : '';
+    const probeLine = probe ? `<div class="meta muted">独立探测：${probe.width}x${probe.height} · ${probe.duration.toFixed(2)}s · 验收 ${j.output.verified ? '通过' : '失败'}</div>` : '';
+    return `<div class="job"><strong>${j.name}</strong> <span class="badge ${j.status === 'completed' ? 'ok' : j.status.includes('reject') || j.status === 'failed' ? 'bad' : ''}">${j.status}</span>
+      <div class="muted">${j.templateId} · ${j.id}</div>${probeLine}${link}</div>`;
+  }).join('') || '暂无任务';
+}
+
+(async function init() {
+  await loadAssets();
+  await loadTemplates();
+  await loadJobs();
+  setInterval(loadJobs, 5000);
+})();
+</script>
+</body>
+</html>

@@ -23,3 +23,8 @@ __pycache__/
 *.log
 .env
 .env.*
+
+# runtime data and render work directories
+/data/
+/packs/*/renders/work/
+/packs/*/renders/verify_*/
