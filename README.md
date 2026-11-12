@@ -24,10 +24,11 @@
 ## 目录
 
 ```
-src/        校验、编译、探测、渲染、存储、HTTP 服务
+src/        校验、编译、探测、渲染、存储、HTTP 服务（legacy.js 仅负责旧字段迁移，校验器不接受过期字段）
 web/        单页编辑器（绑定素材、编辑变量、实测溢出提示、预览、正式渲染、任务与验收状态）
-scripts/    素材生成、引导入库、冻结、独立验收、浏览器冒烟
-test/       node:test 套件（45 个用例）
+scripts/    素材生成、引导入库、冻结、独立验收、浏览器冒烟、模板契约检查（check-contract.js）
+docs/contract/  模板契约文档、注册表快照、可执行样例（含空槽/循环/长标题/迁移）与检查证据
+test/       node:test 套件（59 个用例）
 packs/      三个品牌数据包：素材、模板定义、冻结成片与逐帧哈希、负面用例清单
 data/       运行期数据（模板、变量表、任务、素材登记），不入库
 ```
@@ -41,9 +42,35 @@ npm start            # 启动网页编辑器 http://localhost:3000
 
 npm run freeze       # 渲染三个冻结成片 + 跑全部负面用例（必须全部拦截）
 npm run verify       # 全新目录重渲染，独立探测时长/尺寸并逐帧比对冻结哈希
-npm test             # 45 个单元/集成/安全用例
+npm test             # 59 个单元/集成/安全用例
 npm run ui:smoke     # 真实浏览器端到端（需先 npm start）
+
+npm run contract:maintain           # 日常维护入口：重新生成派生样例后跑全量契约检查
+npm run contract:check             # 模板契约全量检查：注册表快照、文档、样例真实执行（含渲染与独立探测）
+npm run contract:check -- --static # 无 ffmpeg 的静态检查（注册表/文档/样例/迁移逻辑）
+npm run contract:check -- --json   # 机器可读报告输出到 stdout
+npm run contract:registry          # 节点/参数注册表变更后重新生成 docs/contract/registry-snapshot.json
+npm run contract:examples          # 从正例重新生成派生样例（空槽、循环、长标题、短素材、迁移）
 ```
+
+## 模板契约维护
+
+书面契约是 `docs/contract/TEMPLATE-CONTRACT.md`，与编译器同源并由
+`scripts/check-contract.js` 自动对账：
+
+- **同源**：节点/参数注册表的唯一事实来源是 `src/schema.js` 的 `NODE_TYPES`；
+  `registry-snapshot.json` 只能由 `npm run contract:registry` 从它重新生成，漂移即检查失败。
+- **样例真实触发**：`docs/contract/examples/` 下每个样例都由检查器真实执行——
+  空槽必须报 `ASSET_MISSING`、循环节点必须报带完整环路的 `REF_CYCLE`、
+  长标题必须报带实测宽高/行数的 `TEXT_OVERFLOW`、短背景必须报 `ASSET_DURATION_SHORT`；
+  正例与迁移例必须真实渲染，并由独立 ffprobe 核对成片 1280x720/10s。
+  “没有报错”不算成功，证据写入 `docs/contract/evidence/check-report.json`。
+- **过期字段**：旧字段（如 `lengthSec`、`from/to`、`fadeInMs`、`alpha`、`fontColor`、
+  `maxChars`、`minLenSec`）不进入校验器，也不允许留在 `data/templates/` 默认模板；
+  旧材料经 `src/legacy.js` 的 `migrateTemplate()` 迁移后再走当前契约，迁移样例见
+  `examples/06-legacy_migration.json`，迁移规则与字段对照在契约文档第 7 节。
+- **广告模板复现**：三个品牌模板与 `baseTemplate()` 逐字节一致由检查器强制；
+  `npm run freeze` / `npm run verify` 保证旧流程（冻结成片 + 负面用例 + 逐帧哈希）不变。
 
 ## 三个品牌数据包
 

@@ -1,0 +1,219 @@
+{
+  "generatedBy": "scripts/check-contract.js --update-registry",
+  "contractVersion": "2026-03",
+  "topLevel": {
+    "required": [
+      "id",
+      "name",
+      "width",
+      "height",
+      "fps",
+      "duration",
+      "font",
+      "slots",
+      "variables",
+      "nodes"
+    ],
+    "width": {
+      "min": 2,
+      "max": 7680,
+      "integer": true
+    },
+    "height": {
+      "min": 2,
+      "max": 4320,
+      "integer": true
+    },
+    "fps": {
+      "min": 1,
+      "max": 240
+    },
+    "duration": {
+      "min": 0.1,
+      "max": 600,
+      "unit": "seconds"
+    },
+    "font": {
+      "family": "non-empty string",
+      "weight": [
+        "normal",
+        "bold",
+        "optional"
+      ]
+    }
+  },
+  "paramTypes": [
+    "number",
+    "string",
+    "enum",
+    "color",
+    "slotRef",
+    "variableRef"
+  ],
+  "nodeTypes": {
+    "background": {
+      "kind": "source",
+      "params": {
+        "slot": {
+          "type": "slotRef",
+          "required": true,
+          "of": "video"
+        },
+        "opacity": {
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "default": 1
+        }
+      }
+    },
+    "logo": {
+      "kind": "transform",
+      "inputs": 1,
+      "params": {
+        "slot": {
+          "type": "slotRef",
+          "required": true,
+          "of": "image"
+        },
+        "x": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "y": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "start": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "end": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "fadeIn": {
+          "type": "number",
+          "min": 0,
+          "default": 0
+        },
+        "fadeOut": {
+          "type": "number",
+          "min": 0,
+          "default": 0
+        },
+        "opacity": {
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "default": 1
+        }
+      }
+    },
+    "text": {
+      "kind": "transform",
+      "inputs": 1,
+      "params": {
+        "variable": {
+          "type": "variableRef",
+          "required": true
+        },
+        "x": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "y": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "width": {
+          "type": "number",
+          "required": true,
+          "min": 1
+        },
+        "height": {
+          "type": "number",
+          "required": true,
+          "min": 1
+        },
+        "fontSize": {
+          "type": "number",
+          "required": true,
+          "min": 1,
+          "max": 400
+        },
+        "color": {
+          "type": "color",
+          "default": "#FFFFFF"
+        },
+        "start": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "end": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "fadeIn": {
+          "type": "number",
+          "min": 0,
+          "default": 0
+        },
+        "fadeOut": {
+          "type": "number",
+          "min": 0,
+          "default": 0
+        },
+        "align": {
+          "type": "enum",
+          "values": [
+            "left",
+            "center",
+            "right"
+          ],
+          "default": "left"
+        },
+        "lineHeight": {
+          "type": "number",
+          "min": 0.5,
+          "max": 3,
+          "default": 1.2
+        }
+      }
+    },
+    "endcard": {
+      "kind": "transform",
+      "inputs": 1,
+      "params": {
+        "slot": {
+          "type": "slotRef",
+          "required": true,
+          "of": "image"
+        },
+        "start": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        },
+        "fadeIn": {
+          "type": "number",
+          "required": true,
+          "min": 0
+        }
+      }
+    },
+    "output": {
+      "kind": "output",
+      "inputs": 1,
+      "params": {}
+    }
+  }
+}

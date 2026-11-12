@@ -28,3 +28,6 @@ __pycache__/
 /data/
 /packs/*/renders/work/
 /packs/*/renders/verify_*/
+
+# contract check evidence is regenerated on every run (carries a timestamp)
+/docs/contract/evidence/check-report.json

@@ -11,6 +11,10 @@
     "freeze": "node scripts/freeze.js",
     "verify": "node scripts/verify.js",
     "ui:smoke": "node scripts/ui-smoke.js",
+    "contract:check": "node scripts/check-contract.js",
+    "contract:registry": "node scripts/check-contract.js --update-registry",
+    "contract:examples": "node docs/contract/examples/generate-examples.js",
+    "contract:maintain": "node docs/contract/examples/generate-examples.js && node scripts/check-contract.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {

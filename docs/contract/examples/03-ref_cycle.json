@@ -1,0 +1,178 @@
+{
+  "id": "ex_ref_cycle",
+  "title": "反例：循环引用节点",
+  "pack": "aurora",
+  "kind": "negative",
+  "desc": "把 logoLayer 的输入改为 titleLayer，形成 logoLayer ↔ titleLayer 环。validateReferences 用 DFS 染色输出完整环路路径并报 REF_CYCLE，编译永远不会开始。",
+  "bindings": {
+    "background": "bg12.mp4",
+    "logo": "logo.png",
+    "endcard": "endcard.png"
+  },
+  "unbind": [],
+  "variables": {
+    "title": "AURORA LIGHT",
+    "tagline": "Feel the glow of a new day"
+  },
+  "expect": {
+    "ok": false,
+    "render": false,
+    "errors": [
+      "REF_CYCLE"
+    ],
+    "locatable": true,
+    "messagePattern": "logoLayer -> titleLayer -> logoLayer"
+  },
+  "template": {
+    "id": "aurora_ad",
+    "name": "Aurora — long headline suite template",
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "duration": 10,
+    "font": {
+      "family": "DejaVu Sans",
+      "weight": "bold"
+    },
+    "slots": [
+      {
+        "id": "background",
+        "kind": "video",
+        "width": 1280,
+        "height": 720,
+        "minDuration": 10,
+        "match": "exact",
+        "required": true
+      },
+      {
+        "id": "logo",
+        "kind": "image",
+        "width": 320,
+        "height": 180,
+        "match": "exact",
+        "required": true,
+        "requiresAlpha": true
+      },
+      {
+        "id": "endcard",
+        "kind": "image",
+        "width": 1280,
+        "height": 720,
+        "match": "exact",
+        "required": true
+      }
+    ],
+    "variables": [
+      {
+        "id": "title",
+        "type": "text",
+        "label": "Headline",
+        "maxLength": 200
+      },
+      {
+        "id": "tagline",
+        "type": "text",
+        "label": "Tagline",
+        "maxLength": 120
+      }
+    ],
+    "nodes": [
+      {
+        "id": "bg",
+        "type": "background",
+        "inputs": [],
+        "params": {
+          "slot": "background",
+          "opacity": 1
+        }
+      },
+      {
+        "id": "logoLayer",
+        "type": "logo",
+        "inputs": [
+          "titleLayer"
+        ],
+        "params": {
+          "slot": "logo",
+          "x": 40,
+          "y": 36,
+          "start": 0.3,
+          "end": 7.5,
+          "fadeIn": 0.5,
+          "fadeOut": 0.5,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "titleLayer",
+        "type": "text",
+        "inputs": [
+          "logoLayer"
+        ],
+        "params": {
+          "variable": "title",
+          "x": 80,
+          "y": 250,
+          "width": 1120,
+          "height": 170,
+          "fontSize": 72,
+          "color": "#ffd166",
+          "start": 0.6,
+          "end": 7.8,
+          "fadeIn": 0.4,
+          "fadeOut": 0.4,
+          "align": "center",
+          "lineHeight": 1.15
+        }
+      },
+      {
+        "id": "taglineLayer",
+        "type": "text",
+        "inputs": [
+          "titleLayer"
+        ],
+        "params": {
+          "variable": "tagline",
+          "x": 240,
+          "y": 450,
+          "width": 800,
+          "height": 90,
+          "fontSize": 40,
+          "color": "#FFFFFF",
+          "start": 0.9,
+          "end": 7.8,
+          "fadeIn": 0.4,
+          "fadeOut": 0.4,
+          "align": "center",
+          "lineHeight": 1.2
+        }
+      },
+      {
+        "id": "endcardLayer",
+        "type": "endcard",
+        "inputs": [
+          "taglineLayer"
+        ],
+        "params": {
+          "slot": "endcard",
+          "start": 8,
+          "fadeIn": 0.6
+        }
+      },
+      {
+        "id": "out",
+        "type": "output",
+        "inputs": [
+          "endcardLayer"
+        ],
+        "params": {}
+      }
+    ]
+  },
+  "mutation": {
+    "node": "logoLayer",
+    "inputs": [
+      "titleLayer"
+    ]
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "id": "ex_legacy_migration",
+  "title": "迁移例：过期字段经迁移后按新契约渲染",
+  "pack": "aurora",
+  "kind": "migration",
+  "desc": "旧模板仍使用 lengthSec/timebase/from/to/fadeInMs/fadeOutMs/alpha/fontColor/maxChars/minLenSec 等已下线字段。schema 不接受这些字段；先用 src/legacy.js 迁移为当前契约，迁移结果必须通过校验并正常渲染。",
+  "bindings": {
+    "background": "bg12.mp4",
+    "logo": "logo.png",
+    "endcard": "endcard.png"
+  },
+  "unbind": [],
+  "variables": {
+    "title": "AURORA LIGHT",
+    "tagline": "Feel the glow of a new day"
+  },
+  "expect": {
+    "ok": true,
+    "render": true,
+    "renderSize": {
+      "width": 1280,
+      "height": 720
+    },
+    "renderDuration": 10,
+    "errors": []
+  },
+  "template": {
+    "id": "aurora_ad",
+    "name": "Aurora — long headline suite template",
+    "width": 1280,
+    "height": 720,
+    "font": {
+      "family": "DejaVu Sans",
+      "weight": "bold"
+    },
+    "slots": [
+      {
+        "id": "background",
+        "kind": "video",
+        "width": 1280,
+        "height": 720,
+        "match": "exact",
+        "required": true,
+        "minLenSec": 10
+      },
+      {
+        "id": "logo",
+        "kind": "image",
+        "width": 320,
+        "height": 180,
+        "match": "exact",
+        "required": true,
+        "requiresAlpha": true
+      },
+      {
+        "id": "endcard",
+        "kind": "image",
+        "width": 1280,
+        "height": 720,
+        "match": "exact",
+        "required": true
+      }
+    ],
+    "variables": [
+      {
+        "id": "title",
+        "type": "text",
+        "label": "Headline",
+        "maxChars": 200
+      },
+      {
+        "id": "tagline",
+        "type": "text",
+        "label": "Tagline",
+        "maxLength": 120
+      }
+    ],
+    "nodes": [
+      {
+        "id": "bg",
+        "type": "background",
+        "inputs": [],
+        "params": {
+          "slot": "background",
+          "alpha": 1
+        }
+      },
+      {
+        "id": "logoLayer",
+        "type": "logo",
+        "inputs": [
+          "bg"
+        ],
+        "params": {
+          "slot": "logo",
+          "x": 40,
+          "y": 36,
+          "opacity": 1,
+          "from": 0.3,
+          "to": 7.5,
+          "fadeInMs": 500,
+          "fadeOutMs": 500
+        }
+      },
+      {
+        "id": "titleLayer",
+        "type": "text",
+        "inputs": [
+          "logoLayer"
+        ],
+        "params": {
+          "variable": "title",
+          "x": 80,
+          "y": 250,
+          "width": 1120,
+          "height": 170,
+          "fontSize": 72,
+          "align": "center",
+          "lineHeight": 1.15,
+          "fontColor": "#ffd166",
+          "from": 0.6,
+          "to": 7.8,
+          "fadeInMs": 400,
+          "fadeOutMs": 400
+        }
+      },
+      {
+        "id": "taglineLayer",
+        "type": "text",
+        "inputs": [
+          "titleLayer"
+        ],
+        "params": {
+          "variable": "tagline",
+          "x": 240,
+          "y": 450,
+          "width": 800,
+          "height": 90,
+          "fontSize": 40,
+          "color": "#FFFFFF",
+          "start": 0.9,
+          "end": 7.8,
+          "fadeIn": 0.4,
+          "fadeOut": 0.4,
+          "align": "center",
+          "lineHeight": 1.2
+        }
+      },
+      {
+        "id": "endcardLayer",
+        "type": "endcard",
+        "inputs": [
+          "taglineLayer"
+        ],
+        "params": {
+          "slot": "endcard",
+          "start": 8,
+          "fadeIn": 0.6
+        }
+      },
+      {
+        "id": "out",
+        "type": "output",
+        "inputs": [
+          "endcardLayer"
+        ],
+        "params": {}
+      }
+    ],
+    "lengthSec": 10,
+    "timebase": 30
+  },
+  "expectLegacy": {
+    "rejectedBySchema": true,
+    "legacyFields": [
+      "template.lengthSec",
+      "template.timebase",
+      "node.bg.alpha",
+      "node.logoLayer.from",
+      "node.logoLayer.to",
+      "node.logoLayer.fadeInMs",
+      "node.logoLayer.fadeOutMs",
+      "node.titleLayer.fontColor",
+      "node.titleLayer.from",
+      "node.titleLayer.to",
+      "node.titleLayer.fadeInMs",
+      "node.titleLayer.fadeOutMs",
+      "variable.title.maxChars",
+      "slot.background.minLenSec"
+    ]
+  }
+}
